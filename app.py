@@ -34,7 +34,7 @@ def create_app():
         Diperlukan oleh Flask-Login untuk mengelola session user
         """
         from models import User
-        return User.query.get(int(user_id))
+        return db.session.get(User, int(user_id))
     
     # Register blueprints
     from routes.auth import auth_bp

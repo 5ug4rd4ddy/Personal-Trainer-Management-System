@@ -277,7 +277,7 @@ def update_actual_reps():
         print('DEBUG: Nomor reps tidak valid', file=sys.stderr)
         return {'success': False, 'message': 'Nomor reps tidak valid'}, 400
 
-    detail = SessionDetail.query.get(detail_id)
+    detail = db.session.get(SessionDetail, detail_id)
     if not detail:
         print('DEBUG: Detail tidak ditemukan', file=sys.stderr)
         return {'success': False, 'message': 'Detail tidak ditemukan'}, 404
@@ -330,7 +330,7 @@ def update_rest_time():
         print('DEBUG: Data tidak lengkap', file=sys.stderr)
         return {'success': False, 'message': 'Data tidak lengkap'}, 400
 
-    detail = SessionDetail.query.get(detail_id)
+    detail = db.session.get(SessionDetail, detail_id)
     if not detail:
         print('DEBUG: Detail tidak ditemukan', file=sys.stderr)
         return {'success': False, 'message': 'Detail tidak ditemukan'}, 404
@@ -368,7 +368,7 @@ def update_exercise_notes():
         print('DEBUG: Data tidak lengkap', file=sys.stderr)
         return {'success': False, 'message': 'Data tidak lengkap'}, 400
 
-    detail = SessionDetail.query.get(detail_id)
+    detail = db.session.get(SessionDetail, detail_id)
     if not detail:
         print('DEBUG: Detail tidak ditemukan', file=sys.stderr)
         return {'success': False, 'message': 'Detail tidak ditemukan'}, 404

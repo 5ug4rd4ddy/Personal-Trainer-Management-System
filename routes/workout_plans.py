@@ -78,7 +78,7 @@ def add(client_id):
                         'reps': reps_values[i] if i < len(reps_values) and reps_values[i] else None
                     }
                     # Ambil nama latihan dari database
-                    exercise = Exercise.query.get(exercise_data['exercise_id'])
+                    exercise = db.session.get(Exercise, exercise_data['exercise_id'])
                     if exercise:
                         exercise_data['exercise_name'] = exercise.name
                         selected_exercises.append(exercise_data)
