@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Sesi Hari Ini - Sistem PT{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-calendar-day"></i> Sesi Latihan Hari Ini</h1>
+    <div class="text-muted">
+        <i class="bi bi-calendar3"></i> {{ today_date.strftime('%d %B %Y') }}
+    </div>
+</div>
+
+{% if today_sessions %}
+<div class="row">
+    {% for session in today_sessions %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-person"></i> {{ session.client.name }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Tanggal:</strong>
+                    <span class="text-muted">{{ session.date.strftime('%d/%m/%Y') }}</span>
+                </div>
+                
+                {% if session.exercises_done %}
+                <div class="mb-3">
+                    <strong>Latihan yang Dilakukan:</strong>
+                    <div class="mt-2">
+                        {% set exercises = session.exercises_done.split('\n') %}
+                        {% for exercise in exercises %}
+                            {% if exercise.strip() %}
+                            <span class="badge bg-secondary me-1 mb-1">{{ exercise.strip() }}</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if session.comments %}
+                <div class="mb-3">
+                    <strong>Catatan:</strong>
+                    <p class="text-muted mt-1">{{ session.comments }}</p>
+                </div>
+                {% endif %}
+                
+                <div class="text-muted small">
+                    <i class="bi bi-clock"></i> Dibuat: {{ session.created_at.strftime('%H:%M') }}
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="btn-group w-100" role="group">
+                    <a href="{{ url_for('sessions.view', id=session.id) }}" 
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-eye"></i> Lihat
+                    </a>
+                    <a href="{{ url_for('sessions.edit', id=session.id) }}" 
+                       class="btn btn-outline-warning btn-sm">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    <a href="{{ url_for('clients.view', id=session.client.id) }}" 
+                       class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-person"></i> Profil
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Summary Statistics -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-graph-up"></i> Ringkasan Hari Ini
+                </h5>
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="h3 text-primary">{{ today_sessions|length }}</div>
+                        <div class="text-muted">Total Sesi</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="h3 text-success">{{ today_sessions|selectattr('exercises_done')|list|length }}</div>
+                        <div class="text-muted">Sesi dengan Latihan</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="h3 text-info">{{ today_sessions|selectattr('comments')|list|length }}</div>
+                        <div class="text-muted">Sesi dengan Catatan</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- Empty State -->
+<div class="text-center py-5">
+    <div class="mb-4">
+        <i class="bi bi-calendar-x display-1 text-muted"></i>
+    </div>
+    <h3 class="text-muted">Tidak Ada Sesi Hari Ini</h3>
+    <p class="text-muted mb-4">Belum ada sesi latihan yang dijadwalkan untuk hari ini.</p>
+    <a href="{{ url_for('clients.index') }}" class="btn btn-primary">
+        <i class="bi bi-people"></i> Lihat Daftar Klien
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Auto refresh setiap 5 menit untuk update real-time
+setTimeout(function() {
+    location.reload();
+}, 300000); // 5 menit
+</script>
+{% endblock %}

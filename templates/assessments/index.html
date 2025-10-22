@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Assessment - {{ client.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-clipboard-data me-2"></i>Assessment - {{ client.name }}</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('clients.index') }}">Clients</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('clients.view', id=client.id) }}">{{ client.name }}</a></li>
+                    <li class="breadcrumb-item active">Assessments</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="{{ url_for('assessments.add', client_id=client.id) }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>Add Assessment
+            </a>
+            <a href="{{ url_for('clients.view', id=client.id) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to Client
+            </a>
+        </div>
+    </div>
+
+    <!-- Client Info Card -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    {% if client.photo %}
+                        <img src="{{ url_for('static', filename='uploads/' + client.photo) }}" 
+                             alt="{{ client.name }}" class="profile-img-large rounded-circle">
+                    {% else %}
+                        <div class="profile-img-large rounded-circle bg-secondary d-flex align-items-center justify-content-center">
+                            <i class="bi bi-person-fill text-white" style="font-size: 3rem;"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col">
+                    <h4 class="mb-1">{{ client.name }}</h4>
+                    <p class="text-muted mb-1">
+                        <i class="bi bi-calendar me-1"></i>{{ client.age }} years old
+                        {% if client.gender %}
+                            • {{ client.gender.title() }}
+                        {% endif %}
+                    </p>
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-telephone me-1"></i>{{ client.phone }}
+                        {% if client.email %}
+                            • <i class="bi bi-envelope me-1"></i>{{ client.email }}
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-auto">
+                    <div class="text-center">
+                        <h5 class="mb-0">{{ assessments|length }}</h5>
+                        <small class="text-muted">Total Assessments</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assessments List -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Assessment History</h5>
+        </div>
+        <div class="card-body">
+            {% if assessments %}
+                <div class="row">
+                    {% for assessment in assessments %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100 border-left-primary">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-calendar-event me-1"></i>
+                                        {{ assessment.date.strftime('%d %B %Y') }}
+                                    </h6>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                type="button" data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('assessments.view', id=assessment.id) }}">
+                                                    <i class="bi bi-eye me-2"></i>View Details
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('assessments.edit', id=assessment.id) }}">
+                                                    <i class="bi bi-pencil me-2"></i>Edit
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" href="#" 
+                                                   onclick="confirmDelete('{{ assessment.id }}', '{{ assessment.date.strftime('%d %B %Y') }}')">
+                                                    <i class="bi bi-trash me-2"></i>Delete
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <!-- Assessment Metrics -->
+                                <div class="row g-2 mb-3">
+                                    {% if assessment.weight %}
+                                    <div class="col-6">
+                                        <div class="text-center p-2 bg-light rounded">
+                                            <div class="fw-bold text-primary">{{ assessment.weight }} kg</div>
+                                            <small class="text-muted">Weight</small>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if assessment.height %}
+                                    <div class="col-6">
+                                        <div class="text-center p-2 bg-light rounded">
+                                            <div class="fw-bold text-info">{{ assessment.height }} cm</div>
+                                            <small class="text-muted">Height</small>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if assessment.body_fat %}
+                                    <div class="col-6">
+                                        <div class="text-center p-2 bg-light rounded">
+                                            <div class="fw-bold text-warning">{{ assessment.body_fat }}%</div>
+                                            <small class="text-muted">Body Fat</small>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if assessment.muscle_mass %}
+                                    <div class="col-6">
+                                        <div class="text-center p-2 bg-light rounded">
+                                            <div class="fw-bold text-success">{{ assessment.muscle_mass }} kg</div>
+                                            <small class="text-muted">Muscle Mass</small>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- BMI Calculation -->
+                                {% if assessment.weight and assessment.height %}
+                                {% set bmi = ((assessment.weight / ((assessment.height / 100) ** 2)) | round(1)) %}
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">BMI</small>
+                                        <span class="badge 
+                                            {% if bmi < 18.5 %}bg-info
+                                            {% elif bmi < 25 %}bg-success
+                                            {% elif bmi < 30 %}bg-warning
+                                            {% else %}bg-danger
+                                            {% endif %}">
+                                            {{ bmi }}
+                                        </span>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <!-- Photo -->
+                                {% if assessment.photo %}
+                                <div class="mb-3">
+                                    <img src="{{ url_for('static', filename='uploads/' + assessment.photo) }}" 
+                                         alt="Assessment Photo" class="img-fluid rounded" 
+                                         style="max-height: 150px; width: 100%; object-fit: cover;">
+                                </div>
+                                {% endif %}
+
+                                <!-- Notes Preview -->
+                                {% if assessment.notes %}
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">Notes:</small>
+                                    <p class="small text-truncate-2 mb-0">{{ assessment.notes }}</p>
+                                </div>
+                                {% endif %}
+
+                                <div class="d-grid">
+                                    <a href="{{ url_for('assessments.view', id=assessment.id) }}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-eye me-1"></i>View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-clipboard-data"></i>
+                    <h4>No Assessments Yet</h4>
+                    <p>Mulai memantau kondisi {{ client.name }} dengan membuat assessment pertama.</p>
+                    <a href="{{ url_for('assessments.add', client_id=client.id) }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-1"></i>Add First Assessment
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the assessment from <strong id="deleteDate"></strong>?</p>
+                <p class="text-danger small">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">Delete Assessment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function confirmDelete(assessmentId, assessmentDate) {
+    document.getElementById('deleteDate').textContent = assessmentDate;
+    document.getElementById('deleteForm').action = '/assessments/' + assessmentId + '/delete';
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

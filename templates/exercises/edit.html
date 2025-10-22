@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Latihan{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Edit Latihan</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('exercises.edit', id=exercise.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nama Latihan <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ exercise.name }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Kategori</label>
+                            <select class="form-select" id="category" name="category">
+                                <option value="" {% if not exercise.category %}selected{% endif %}>-- Pilih Kategori --</option>
+                                <option value="Chest" {% if exercise.category == 'Chest' %}selected{% endif %}>Chest (Dada)</option>
+                                <option value="Back" {% if exercise.category == 'Back' %}selected{% endif %}>Back (Punggung)</option>
+                                <option value="Legs" {% if exercise.category == 'Legs' %}selected{% endif %}>Legs (Kaki)</option>
+                                <option value="Shoulders" {% if exercise.category == 'Shoulders' %}selected{% endif %}>Shoulders (Bahu)</option>
+                                <option value="Arms" {% if exercise.category == 'Arms' %}selected{% endif %}>Arms (Lengan)</option>
+                                <option value="Core" {% if exercise.category == 'Core' %}selected{% endif %}>Core (Inti)</option>
+                                <option value="Cardio" {% if exercise.category == 'Cardio' %}selected{% endif %}>Cardio</option>
+                                <option value="Full Body" {% if exercise.category == 'Full Body' %}selected{% endif %}>Full Body</option>
+                                <option value="Other" {% if exercise.category == 'Other' %}selected{% endif %}>Lainnya</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="description" name="description" rows="4">{{ exercise.description }}</textarea>
+                        </div>
+                        
+                        <!-- Opsi Weight -->
+                        <div class="mb-3">
+                            <label class="form-label">Opsi Satuan Weight</label>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div id="weight-options">
+                                        {% if exercise.weight_options %}
+                                            {% for unit in exercise.weight_options %}
+                                            <div class="weight-option mb-3">
+                                                <div class="row">
+                                                    <div class="col-md-10">
+                                                        <input type="text" class="form-control" name="weight_units[]" value="{{ unit }}" placeholder="Satuan (contoh: kg, lb, detik)">
+                                                    </div>
+                                                    <div class="col-md-2 d-flex align-items-stretch">
+                                                        <button type="button" class="btn btn-outline-danger remove-weight h-100" {% if loop.index == 1 and loop.length == 1 %}style="display:none;"{% endif %}><i class="bi bi-trash"></i></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        {% else %}
+                                            <div class="weight-option mb-3">
+                                                <div class="row">
+                                                    <div class="col-md-10">
+                                                        <input type="text" class="form-control" name="weight_units[]" placeholder="Satuan (contoh: kg, lb, detik)">
+                                                    </div>
+                                                    <div class="col-md-2 d-flex align-items-stretch">
+                                                        <button type="button" class="btn btn-outline-danger remove-weight  h-100" style="display:none;"><i class="bi bi-trash"></i></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-success" id="add-weight-option">
+                                        <i class="bi bi-plus-lg"></i> Tambah Satuan Weight
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Opsi Reps -->
+                        <div class="mb-3">
+                            <label class="form-label">Opsi Satuan Reps</label>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div id="reps-options">
+                                        {% if exercise.reps_options %}
+                                            {% for unit in exercise.reps_options %}
+                                            <div class="reps-option mb-3">
+                                                <div class="row">
+                                                    <div class="col-md-10">
+                                                        <input type="text" class="form-control" name="reps_units[]" value="{{ unit }}" placeholder="Satuan (contoh: kali, detik)">
+                                                    </div>
+                                                    <div class="col-md-2 d-flex align-items-stretch">
+                                                        <button type="button" class="btn btn-outline-danger remove-reps  h-100" {% if loop.index == 1 and loop.length == 1 %}style="display:none;"{% endif %}><i class="bi bi-trash"></i></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        {% else %}
+                                            <div class="reps-option mb-3">
+                                                <div class="row">
+                                                    <div class="col-md-10">
+                                                        <input type="text" class="form-control" name="reps_units[]" placeholder="Satuan (contoh: kali, detik)">
+                                                    </div>
+                                                    <div class="col-md-2 d-flex align-items-stretch">
+                                                        <button type="button" class="btn btn-outline-danger remove-reps  h-100" style="display:none;"><i class="bi bi-trash"></i></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-success" id="add-reps-option">
+                                        <i class="bi bi-plus-lg"></i> Tambah Satuan Reps
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('exercises.index') }}" class="btn btn-secondary">Kembali</a>
+                            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Weight options
+        const weightOptionsContainer = document.getElementById('weight-options');
+        const addWeightBtn = document.getElementById('add-weight-option');
+        
+        // Inisialisasi tombol hapus weight
+        const weightRemoveButtons = document.querySelectorAll('.remove-weight');
+        if (weightRemoveButtons.length > 1) {
+            weightRemoveButtons.forEach(btn => btn.style.display = 'block');
+        }
+        
+        // Inisialisasi tombol hapus reps
+        const repsRemoveButtons = document.querySelectorAll('.remove-reps');
+        if (repsRemoveButtons.length > 1) {
+            repsRemoveButtons.forEach(btn => btn.style.display = 'block');
+        }
+        
+        addWeightBtn.addEventListener('click', function() {
+            const weightOption = document.createElement('div');
+            weightOption.className = 'weight-option mb-3';
+            weightOption.innerHTML = `
+                <div class="row">
+                    <div class="col-md-10">
+                        <input type="text" class="form-control" name="weight_units[]" placeholder="Satuan (contoh: kg, lb, detik)">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-stretch">
+                        <button type="button" class="btn btn-outline-danger remove-weight  h-100" style="display:none;"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>
+            `;
+            weightOptionsContainer.appendChild(weightOption);
+            
+            // Show all remove buttons when there's more than one option
+            const removeButtons = document.querySelectorAll('.remove-weight');
+            if (removeButtons.length > 1) {
+                removeButtons.forEach(btn => btn.style.display = 'block');
+            }
+        });
+        
+        // Event delegation for remove buttons
+        weightOptionsContainer.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-weight') || e.target.closest('.remove-weight')) {
+                const weightOption = e.target.closest('.weight-option');
+                weightOption.remove();
+                
+                // Hide remove button if only one option left
+                const removeButtons = document.querySelectorAll('.remove-weight');
+                if (removeButtons.length <= 1) {
+                    removeButtons.forEach(btn => btn.style.display = 'none');
+                }
+            }
+        });
+        
+        // Reps options
+        const repsOptionsContainer = document.getElementById('reps-options');
+        const addRepsBtn = document.getElementById('add-reps-option');
+        
+        addRepsBtn.addEventListener('click', function() {
+            const repsOption = document.createElement('div');
+            repsOption.className = 'reps-option mb-3';
+            repsOption.innerHTML = `
+                <div class="row">
+                    <div class="col-md-10">
+                        <input type="text" class="form-control" name="reps_units[]" placeholder="Satuan (contoh: kali, detik)">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-stretch">
+                        <button type="button" class="btn btn-outline-danger remove-reps  h-100" style="display:none;"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>
+            `;
+            repsOptionsContainer.appendChild(repsOption);
+            
+            // Show all remove buttons when there's more than one option
+            const removeButtons = document.querySelectorAll('.remove-reps');
+            if (removeButtons.length > 1) {
+                removeButtons.forEach(btn => btn.style.display = 'block');
+            }
+        });
+        
+        // Event delegation for remove buttons
+        repsOptionsContainer.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-reps') || e.target.closest('.remove-reps')) {
+                const repsOption = e.target.closest('.reps-option');
+                repsOption.remove();
+                
+                // Hide remove button if only one option left
+                const removeButtons = document.querySelectorAll('.remove-reps');
+                if (removeButtons.length <= 1) {
+                    removeButtons.forEach(btn => btn.style.display = 'none');
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

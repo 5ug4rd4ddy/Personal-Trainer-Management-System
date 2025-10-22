@@ -1,0 +1,565 @@
+{% extends "base.html" %}
+
+{% block title %}Add Workout Plan - {{ client.name }}{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+    /* Style untuk tombol hari */
+    .btn-day {
+        min-width: 100px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    /* Responsif untuk iPad */
+    @media (max-width: 991px) {
+        .btn-day {
+            min-width: 120px;
+            font-size: 1.1rem;
+            padding: 0.75rem 1rem !important;
+        }
+    }
+    
+    /* Sembunyikan checkbox asli */
+    .day-checkbox {
+        position: absolute;
+        opacity: 0 !important;
+        width: 0;
+        height: 0;
+        pointer-events: none;
+        display: none !important;
+        visibility: hidden !important;
+    }
+    /* input.day-checkbox {display: none !important;} */
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-plus-circle me-2"></i>Add Program - {{ client.name }}</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('clients.index') }}">Klien</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('clients.view', id=client.id) }}">{{ client.name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('workout_plans.index', client_id=client.id) }}">Program</a></li>
+                    <li class="breadcrumb-item active">Add Program Latihan</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="{{ url_for('workout_plans.index', client_id=client.id) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Kembali ke Program
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Workout Plan Form -->
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-clipboard-data me-2"></i>Detail Program</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="workoutPlanForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        
+                        <!-- Menyimpan metadata exercises dalam format JSON -->
+                        <script type="application/json" id="exercisesMetaJson">
+                            {
+                                {% for exercise in exercises %}
+                                "{{ exercise.id }}": {
+                                    "weight_options": {{ exercise.weight_options|tojson }},
+                                    "reps_options": {{ exercise.reps_options|tojson }}
+                                }{% if not loop.last %},{% endif %}
+                                {% endfor %}
+                            }
+                        </script>
+                        
+                        <!-- Plan Name -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="plan_name" class="form-label">Nama Program Latihan <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="plan_name" name="plan_name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="start_date" class="form-label">Tanggal Mulai <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="start_date" name="start_date" required>
+                            </div>
+                        </div>
+
+                        <!-- Duration and Days per Week -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="duration" class="form-label">Durasi Program <span class="text-danger">*</span></label>
+                                <select class="form-select" id="duration" name="duration" required>
+                                    <option value="">Pilih Durasi</option>
+                                    <option value="1">1 Minggu</option>
+                                    <option value="2">2 Minggu</option>
+                                    <option value="4">4 Minggu (1 Bulan)</option>
+                                    <option value="8">8 Minggu (2 Bulan)</option>
+                                    <option value="12">12 Minggu (3 Bulan)</option>
+                                    <option value="16">16 Minggu (4 Bulan)</option>
+                                    <option value="24">24 Minggu (6 Bulan)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="days_per_week" class="form-label">Hari Latihan per Minggu <span class="text-danger">*</span></label>
+                                <select class="form-select" id="days_per_week" name="days_per_week" required onchange="updateDaySelection()">
+                                    <option value="">Pilih Jumlah Hari</option>
+                                    <option value="1">1 Hari per Minggu</option>
+                                    <option value="2">2 Hari per Minggu</option>
+                                    <option value="3">3 Hari per Minggu</option>
+                                    <option value="4">4 Hari per Minggu</option>
+                                    <option value="5">5 Hari per Minggu</option>
+                                    <option value="6">6 Hari per Minggu</option>
+                                    <option value="7">7 Hari per Minggu</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Day Selection -->
+                        <div class="row mb-3" id="daySelectionContainer" style="display: none;">
+                            <div class="col-12">
+                                <label class="form-label">Pilih Hari Latihan <span class="text-danger">*</span></label>
+                                <div class="d-flex flex-wrap gap-3" id="dayCheckboxes">
+                                    <div class="day-button-container">
+                                        <input class="day-checkbox" type="checkbox" id="day-senin" value="Senin" name="selected_days[]">
+                                        <label class="btn btn-outline-dark btn-day px-4 py-3" for="day-senin">Senin</label>
+                                    </div>
+                                    <div class="day-button-container">
+                                        <input class="day-checkbox" type="checkbox" id="day-selasa" value="Selasa" name="selected_days[]">
+                                        <label class="btn btn-outline-dark btn-day px-4 py-3" for="day-selasa">Selasa</label>
+                                    </div>
+                                    <div class="day-button-container">
+                                        <input class="day-checkbox" type="checkbox" id="day-rabu" value="Rabu" name="selected_days[]">
+                                        <label class="btn btn-outline-dark btn-day px-4 py-3" for="day-rabu">Rabu</label>
+                                    </div>
+                                    <div class="day-button-container">
+                                        <input class="day-checkbox" type="checkbox" id="day-kamis" value="Kamis" name="selected_days[]">
+                                        <label class="btn btn-outline-dark btn-day px-4 py-3" for="day-kamis">Kamis</label>
+                                    </div>
+                                    <div class="day-button-container">
+                                        <input class="day-checkbox" type="checkbox" id="day-jumat" value="Jumat" name="selected_days[]">
+                                        <label class="btn btn-outline-dark btn-day px-4 py-3" for="day-jumat">Jumat</label>
+                                    </div>
+                                    <div class="day-button-container">
+                                        <input class="day-checkbox" type="checkbox" id="day-sabtu" value="Sabtu" name="selected_days[]">
+                                        <label class="btn btn-outline-dark btn-day px-4 py-3" for="day-sabtu">Sabtu</label>
+                                    </div>
+                                    <div class="day-button-container">
+                                        <input class="day-checkbox" type="checkbox" id="day-minggu" value="Minggu" name="selected_days[]">
+                                        <label class="btn btn-outline-dark btn-day px-4 py-3" for="day-minggu">Minggu</label>
+                                    </div>
+                                </div>
+                                <div class="text-danger small mt-2" id="daySelectionError" style="display: none;">
+                                    Pilih <span id="requiredDays">0</span> hari sesuai dengan jumlah hari per minggu
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label for="notes" class="form-label">Catatan Program</label>
+                                <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Catatan tambahan untuk program latihan..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Detail Latihan -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-list-task me-2"></i>Detail Latihan</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="exerciseContainer"></div>
+                                <button type="button" class="btn btn-success btn-sm" onclick="addExerciseRow()">
+                                    <i class="bi bi-plus-lg me-1"></i>Tambah Latihan
+                                </button>
+                                <div class="text-muted small mt-2">Pilih latihan, lalu satuan beban dan satuan reps akan muncul sesuai opsinya.</div>
+                            </div>
+                        </div>
+                        <!-- Preview Sesi yang Akan Dibuat -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-calendar-check me-2"></i>Preview Sesi yang Akan Dibuat</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info" id="sessionPreviewInfo">
+                                    <i class="bi bi-info-circle me-2"></i>Pilih durasi program, jumlah hari per minggu, dan tanggal mulai untuk melihat preview sesi yang akan dibuat.
+                                </div>
+                                <div id="sessionPreviewContainer" style="display: none;">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>No</th>
+                                                    <th>Tanggal</th>
+                                                    <th>Hari</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="sessionPreviewBody">
+                                                <!-- Session previews will be added here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="bi bi-check-lg me-1"></i>Simpan Program Latihan
+                                </button>
+                                <a href="{{ url_for('workout_plans.index', client_id=client.id) }}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-lg me-1"></i>Batal
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Metadata latihan untuk dropdown satuan (JSON agar tidak mengganggu linter JS) -->
+<script type="application/json" id="exercisesMetaJson">
+{
+    {% for exercise in exercises %}
+    "{{ exercise.id }}": {
+        "weight_options": {{ (exercise.weight_options or []) | tojson }},
+        "reps_options": {{ (exercise.reps_options or []) | tojson }}
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+}
+</script>
+
+<script>
+// Set default start date to today
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0];
+    document.getElementById('start_date').value = formattedDate;
+});
+
+// Handle day selection based on days per week
+function updateDaySelection() {
+    const daysPerWeek = parseInt(document.getElementById('days_per_week').value);
+    const daySelectionContainer = document.getElementById('daySelectionContainer');
+    const dayCheckboxes = document.querySelectorAll('.day-checkbox');
+    const requiredDaysSpan = document.getElementById('requiredDays');
+    
+    // Reset checkboxes
+    dayCheckboxes.forEach(checkbox => {
+        checkbox.checked = false;
+        checkbox.disabled = false;
+    });
+    
+    if (daysPerWeek > 0) {
+        daySelectionContainer.style.display = 'block';
+        requiredDaysSpan.textContent = daysPerWeek;
+        
+        // If all days are selected, disable the rest
+        if (daysPerWeek === 7) {
+            dayCheckboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        }
+    } else {
+        daySelectionContainer.style.display = 'none';
+    }
+    
+    // Update session preview
+    updateSessionPreview();
+}
+
+// Limit checkbox selection based on days per week
+document.addEventListener('DOMContentLoaded', function() {
+    const dayCheckboxes = document.querySelectorAll('.day-checkbox');
+    
+    dayCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const daysPerWeek = parseInt(document.getElementById('days_per_week').value);
+            const checkedBoxes = document.querySelectorAll('.day-checkbox:checked');
+            const daySelectionError = document.getElementById('daySelectionError');
+            
+            if (checkedBoxes.length > daysPerWeek) {
+                this.checked = false;
+                daySelectionError.style.display = 'block';
+            } else {
+                daySelectionError.style.display = 'none';
+                
+                // Update session preview when days change
+                updateSessionPreview();
+            }
+        });
+    });
+});
+
+// Generate session preview
+function updateSessionPreview() {
+    const durationWeeks = parseInt(document.getElementById('duration').value) || 0;
+    const daysPerWeek = parseInt(document.getElementById('days_per_week').value) || 0;
+    const startDateStr = document.getElementById('start_date').value;
+    const selectedDays = Array.from(document.querySelectorAll('.day-checkbox:checked')).map(cb => cb.value);
+    
+    const sessionPreviewInfo = document.getElementById('sessionPreviewInfo');
+    const sessionPreviewContainer = document.getElementById('sessionPreviewContainer');
+    const sessionPreviewBody = document.getElementById('sessionPreviewBody');
+    
+    // Clear previous preview
+    sessionPreviewBody.innerHTML = '';
+    
+    // Check if we have all required data
+    if (durationWeeks > 0 && daysPerWeek > 0 && startDateStr && selectedDays.length === daysPerWeek) {
+        sessionPreviewInfo.style.display = 'none';
+        sessionPreviewContainer.style.display = 'block';
+        
+        // Map day names to day numbers (0 = Sunday, 1 = Monday, etc.)
+        const dayNameToNumber = {
+            'Minggu': 0,
+            'Senin': 1,
+            'Selasa': 2,
+            'Rabu': 3,
+            'Kamis': 4,
+            'Jumat': 5,
+            'Sabtu': 6
+        };
+        
+        // Convert selected days to day numbers
+        const selectedDayNumbers = selectedDays.map(day => dayNameToNumber[day]).sort((a, b) => a - b);
+        
+        // Start date
+        const startDate = new Date(startDateStr);
+        
+        // Generate sessions
+        const totalSessions = durationWeeks * daysPerWeek;
+        let sessionDate = new Date(startDate);
+        let sessionCount = 0;
+        let sessionNumber = 1;
+        
+        // Day names in Indonesian
+        const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        
+        while (sessionCount < totalSessions) {
+            const currentDayNumber = sessionDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            
+            if (selectedDayNumbers.includes(currentDayNumber)) {
+                // Format date as DD/MM/YYYY
+                const formattedDate = sessionDate.toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+                
+                // Add row to preview table
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${sessionNumber}</td>
+                    <td>${formattedDate}</td>
+                    <td>${dayNames[currentDayNumber]}</td>
+                `;
+                sessionPreviewBody.appendChild(row);
+                
+                sessionCount++;
+                sessionNumber++;
+            }
+            
+            // Move to next day
+            sessionDate.setDate(sessionDate.getDate() + 1);
+        }
+    } else {
+        sessionPreviewInfo.style.display = 'block';
+        sessionPreviewContainer.style.display = 'none';
+    }
+}
+
+// Add event listeners to update session preview
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('duration').addEventListener('change', updateSessionPreview);
+    document.getElementById('start_date').addEventListener('change', updateSessionPreview);
+    // Inisialisasi satu baris latihan saat halaman dimuat
+    addExerciseRow();
+});
+
+// Ambil metadata opsi latihan dari tag JSON agar tidak mengganggu linter JS
+const exercisesMeta = (() => {
+    const el = document.getElementById('exercisesMetaJson');
+    if (!el) return {};
+    try {
+        return JSON.parse(el.textContent);
+    } catch (e) {
+        console.warn('Gagal parse exercisesMeta JSON', e);
+        return {};
+    }
+})();
+
+// Fungsi untuk mengupdate opsi Weight dan Reps berdasarkan latihan yang dipilih
+function updateWeightRepsOptions(selectElement) {
+    const row = selectElement.closest('.exercise-row');
+    const exerciseId = selectElement.value;
+    const weightSelect = row.querySelector('.weight-select');
+    const repsSelect = row.querySelector('.reps-select');
+    
+    // Reset options
+    weightSelect.innerHTML = '<option value="">Pilih Weight</option>';
+    repsSelect.innerHTML = '<option value="">Pilih Reps</option>';
+    
+    if (exerciseId && exercisesMeta[exerciseId]) {
+        const meta = exercisesMeta[exerciseId];
+        
+        // Populate weight options
+        if (meta.weight_options && meta.weight_options.length) {
+            meta.weight_options.forEach(opt => {
+                // Gunakan nilai asli untuk weight, bukan hanya nilai numerik
+                const option = document.createElement('option');
+                option.value = opt; // Simpan nilai asli
+                option.textContent = opt;    // Tampilkan teks lengkap
+                weightSelect.appendChild(option);
+            });
+        }
+        
+        // Populate reps options
+        if (meta.reps_options && meta.reps_options.length) {
+            meta.reps_options.forEach(opt => {
+                const option = document.createElement('option');
+                option.value = opt;
+                option.textContent = opt;
+                repsSelect.appendChild(option);
+            });
+        }
+    }
+}
+
+// Fungsi untuk menangani pemilihan hari
+function setupDayButtons() {
+    const dayCheckboxes = document.querySelectorAll('.day-checkbox');
+    
+    dayCheckboxes.forEach(checkbox => {
+        // Tambahkan event listener untuk setiap checkbox
+        checkbox.addEventListener('change', function() {
+            const label = document.querySelector(`label[for="${this.id}"]`);
+            if (this.checked) {
+                label.classList.add('active');
+            } else {
+                label.classList.remove('active');
+            }
+        });
+        
+        // Set status awal
+        const label = document.querySelector(`label[for="${checkbox.id}"]`);
+        if (checkbox.checked) {
+            label.classList.add('active');
+        }
+    });
+}
+
+// Panggil fungsi setup saat dokumen siap
+document.addEventListener('DOMContentLoaded', function() {
+    setupDayButtons();
+});
+
+function addExerciseRow() {
+    const container = document.getElementById('exerciseContainer');
+    const newRow = document.createElement('div');
+    newRow.className = 'exercise-row mb-3 p-3 border rounded';
+    newRow.innerHTML = `
+        <div class="row">
+            <div class="col-md-3">
+                <label class="form-label">Nama Latihan</label>
+                <select class="form-select exercise-select" name="exercise_id[]" required onchange="updateWeightRepsOptions(this)">
+                    <option value="">Pilih Latihan</option>
+                    {% if exercises %}
+                        {% for exercise in exercises %}
+                            <option value="{{ exercise.id }}">{{ exercise.name }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="" disabled>Belum ada data latihan</option>
+                    {% endif %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Sets</label>
+                <select class="form-select" name="sets[]" required>
+                    <option value="">Pilih</option>
+                    {% for i in range(1, 11) %}
+                        <option value="{{ i }}" {% if i == 3 %}selected{% endif %}>{{ i }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Weight</label>
+                <select class="form-select weight-select" name="weight[]">
+                    <option value="">Pilih Weight</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Reps</label>
+                <select class="form-select reps-select" name="reps[]">
+                    <option value="">Pilih Reps</option>
+                </select>
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+                <button type="button" class="btn btn-outline-danger btn-sm w-100 h-100" onclick="removeExerciseRow(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    container.appendChild(newRow);
+}
+
+function removeExerciseRow(button) {
+    const container = document.getElementById('exerciseContainer');
+    if (container.children.length > 1) {
+        button.closest('.exercise-row').remove();
+    } else {
+        alert('Minimal harus ada satu latihan!');
+    }
+}
+
+// Form validation
+document.getElementById('workoutPlanForm').addEventListener('submit', function(e) {
+    // Validate plan name
+    const planName = document.getElementById('plan_name').value.trim();
+    if (!planName) {
+        e.preventDefault();
+        alert('Nama program latihan harus diisi!');
+        return false;
+    }
+    
+    // Validate duration and days per week
+    const durationWeeks = document.getElementById('duration').value;
+    const daysPerWeek = document.getElementById('days_per_week').value;
+    if (!durationWeeks || !daysPerWeek) {
+        e.preventDefault();
+        alert('Durasi program dan jumlah hari per minggu harus diisi!');
+        return false;
+    }
+    
+    // Validate day selection
+    const selectedDays = document.querySelectorAll('.day-checkbox:checked');
+    if (selectedDays.length !== parseInt(daysPerWeek)) {
+        e.preventDefault();
+        alert(`Pilih tepat ${daysPerWeek} hari untuk latihan!`);
+        return false;
+    }
+    
+    // Validate start date
+    const startDate = document.getElementById('start_date').value;
+    if (!startDate) {
+        e.preventDefault();
+        alert('Tanggal mulai harus diisi!');
+        return false;
+    }
+});
+</script>
+{% endblock %}

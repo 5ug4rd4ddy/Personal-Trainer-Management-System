@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}Assessment Details - {{ client.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-clipboard-data me-2"></i>Assessment Details</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('clients.index') }}">Clients</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('clients.view', id=client.id) }}">{{ client.name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('assessments.index', client_id=client.id) }}">Assessments</a></li>
+                    <li class="breadcrumb-item active">{{ assessment.date.strftime('%d %B %Y') }}</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="{{ url_for('assessments.edit', id=assessment.id) }}" class="btn btn-primary">
+                <i class="bi bi-pencil me-1"></i>Edit Assessment
+            </a>
+            <a href="{{ url_for('assessments.index', client_id=client.id) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to Assessments
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Assessment Details -->
+        <div class="col-lg-8">
+            <!-- Basic Info -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>{{ assessment.date.strftime('%d %B %Y') }}</h5>
+                        <span class="badge bg-primary">Assessment #{{ loop.index if loop else '1' }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">Client Information</h6>
+                            <div class="d-flex align-items-center mb-3">
+                                {% if client.photo %}
+                                    <img src="{{ url_for('static', filename='uploads/' + client.photo) }}" 
+                                         alt="{{ client.name }}" class="profile-img-large rounded-circle me-3">
+                                {% else %}
+                                    <div class="profile-img-large rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3">
+                                        <i class="bi bi-person-fill text-white" style="font-size: 3rem;"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <h4 class="mb-1">{{ client.name }}</h4>
+                                    <p class="text-muted mb-1">{{ client.age }} years old • {{ client.gender.title() if client.gender else 'N/A' }}</p>
+                                    <p class="text-muted mb-0">{{ client.phone }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            {% if assessment.photo %}
+                            <h6 class="text-muted mb-3">Assessment Photo</h6>
+                            <img src="{{ url_for('static', filename='uploads/' + assessment.photo) }}" 
+                                 alt="Assessment Photo" class="img-fluid rounded" 
+                                 style="max-height: 200px; width: 100%; object-fit: cover;">
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Measurements -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-rulers me-2"></i>Measurements & Metrics</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Basic Measurements -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <h6 class="border-bottom pb-2 mb-3">Basic Measurements</h6>
+                        </div>
+                        {% if assessment.weight %}
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="bi bi-speedometer2 text-primary mb-2" style="font-size: 2rem;"></i>
+                                <h4 class="mb-1 text-primary">{{ assessment.weight }}</h4>
+                                <small class="text-muted">Weight (kg)</small>
+                                {% if previous_assessment and previous_assessment.weight %}
+                                    {% set weight_diff = assessment.weight - previous_assessment.weight %}
+                                    <div class="mt-1">
+                                        <small class="badge {% if weight_diff > 0 %}bg-warning{% elif weight_diff < 0 %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {% if weight_diff > 0 %}+{% endif %}{{ weight_diff|round(1) }} kg
+                                        </small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if assessment.height %}
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="bi bi-arrows-vertical text-info mb-2" style="font-size: 2rem;"></i>
+                                <h4 class="mb-1 text-info">{{ assessment.height }}</h4>
+                                <small class="text-muted">Height (cm)</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if assessment.weight and assessment.height %}
+                        {% set bmi = ((assessment.weight / ((assessment.height / 100) ** 2)) | round(1)) %}
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="bi bi-calculator text-success mb-2" style="font-size: 2rem;"></i>
+                                <h4 class="mb-1 text-success">{{ bmi }}</h4>
+                                <small class="text-muted">BMI</small>
+                                <div class="mt-1">
+                                    <small class="badge 
+                                        {% if bmi < 18.5 %}bg-info
+                                        {% elif bmi < 25 %}bg-success
+                                        {% elif bmi < 30 %}bg-warning
+                                        {% else %}bg-danger
+                                        {% endif %}">
+                                        {% if bmi < 18.5 %}Underweight
+                                        {% elif bmi < 25 %}Normal
+                                        {% elif bmi < 30 %}Overweight
+                                        {% else %}Obese
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Body Composition -->
+                    {% if assessment.body_fat or assessment.muscle_mass %}
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <h6 class="border-bottom pb-2 mb-3">Body Composition</h6>
+                        </div>
+                        {% if assessment.body_fat %}
+                        <div class="col-md-6 mb-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="bi bi-pie-chart text-warning mb-2" style="font-size: 2rem;"></i>
+                                <h4 class="mb-1 text-warning">{{ assessment.body_fat }}%</h4>
+                                <small class="text-muted">Body Fat</small>
+                                {% if previous_assessment and previous_assessment.body_fat %}
+                                    {% set bf_diff = assessment.body_fat - previous_assessment.body_fat %}
+                                    <div class="mt-1">
+                                        <small class="badge {% if bf_diff > 0 %}bg-warning{% elif bf_diff < 0 %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {% if bf_diff > 0 %}+{% endif %}{{ bf_diff|round(1) }}%
+                                        </small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if assessment.muscle_mass %}
+                        <div class="col-md-6 mb-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="bi bi-lightning text-success mb-2" style="font-size: 2rem;"></i>
+                                <h4 class="mb-1 text-success">{{ assessment.muscle_mass }}</h4>
+                                <small class="text-muted">Muscle Mass (kg)</small>
+                                {% if previous_assessment and previous_assessment.muscle_mass %}
+                                    {% set mm_diff = assessment.muscle_mass - previous_assessment.muscle_mass %}
+                                    <div class="mt-1">
+                                        <small class="badge {% if mm_diff > 0 %}bg-success{% elif mm_diff < 0 %}bg-warning{% else %}bg-secondary{% endif %}">
+                                            {% if mm_diff > 0 %}+{% endif %}{{ mm_diff|round(1) }} kg
+                                        </small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Body Measurements -->
+                    {% if assessment.chest or assessment.waist or assessment.hips or assessment.arm or assessment.thigh or assessment.neck %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="border-bottom pb-2 mb-3">Body Measurements (cm)</h6>
+                        </div>
+                        {% if assessment.chest %}
+                        <div class="col-md-4 col-sm-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded">
+                                <span><i class="bi bi-person me-2"></i>Chest</span>
+                                <strong>{{ assessment.chest }} cm</strong>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if assessment.waist %}
+                        <div class="col-md-4 col-sm-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded">
+                                <span><i class="bi bi-circle me-2"></i>Waist</span>
+                                <strong>{{ assessment.waist }} cm</strong>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if assessment.hips %}
+                        <div class="col-md-4 col-sm-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded">
+                                <span><i class="bi bi-circle me-2"></i>Hips</span>
+                                <strong>{{ assessment.hips }} cm</strong>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if assessment.arm %}
+                        <div class="col-md-4 col-sm-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded">
+                                <span><i class="bi bi-arrow-left-right me-2"></i>Arm</span>
+                                <strong>{{ assessment.arm }} cm</strong>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if assessment.thigh %}
+                        <div class="col-md-4 col-sm-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded">
+                                <span><i class="bi bi-arrow-up-down me-2"></i>Thigh</span>
+                                <strong>{{ assessment.thigh }} cm</strong>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if assessment.neck %}
+                        <div class="col-md-4 col-sm-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded">
+                                <span><i class="bi bi-circle me-2"></i>Neck</span>
+                                <strong>{{ assessment.neck }} cm</strong>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Notes -->
+            {% if assessment.notes %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-journal-text me-2"></i>Notes</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ assessment.notes }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('assessments.edit', id=assessment.id) }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-pencil me-1"></i>Edit Assessment
+                        </a>
+                        <a href="{{ url_for('assessments.add', client_id=client.id) }}" class="btn btn-success btn-sm">
+                            <i class="bi bi-plus-circle me-1"></i>Add New Assessment
+                        </a>
+                        <a href="{{ url_for('workout_plans.add', client_id=client.id) }}" class="btn btn-warning btn-sm">
+                            <i class="bi bi-clipboard-check me-1"></i>Create Workout Plan
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assessment Comparison -->
+            {% if previous_assessment %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-graph-up me-2"></i>Assessment Comparison</h6>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted d-block mb-3">Compared to {{ previous_assessment.date.strftime('%d %B %Y') }}</small>
+                    
+                    {% if assessment.weight and previous_assessment.weight %}
+                    {% set weight_diff = assessment.weight - previous_assessment.weight %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Weight</span>
+                        <span class="badge {% if weight_diff > 0 %}bg-warning{% elif weight_diff < 0 %}bg-success{% else %}bg-secondary{% endif %}">
+                            {% if weight_diff > 0 %}+{% endif %}{{ weight_diff|round(1) }} kg
+                        </span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if assessment.body_fat and previous_assessment.body_fat %}
+                    {% set bf_diff = assessment.body_fat - previous_assessment.body_fat %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Body Fat</span>
+                        <span class="badge {% if bf_diff > 0 %}bg-warning{% elif bf_diff < 0 %}bg-success{% else %}bg-secondary{% endif %}">
+                            {% if bf_diff > 0 %}+{% endif %}{{ bf_diff|round(1) }}%
+                        </span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if assessment.muscle_mass and previous_assessment.muscle_mass %}
+                    {% set mm_diff = assessment.muscle_mass - previous_assessment.muscle_mass %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Muscle Mass</span>
+                        <span class="badge {% if mm_diff > 0 %}bg-success{% elif mm_diff < 0 %}bg-warning{% else %}bg-secondary{% endif %}">
+                            {% if mm_diff > 0 %}+{% endif %}{{ mm_diff|round(1) }} kg
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Assessment Timeline -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>Assessment Timeline</h6>
+                </div>
+                <div class="card-body">
+                    {% if all_assessments %}
+                        {% for assess in all_assessments[:5] %}
+                        <div class="d-flex align-items-center mb-2 {% if assess.id == assessment.id %}bg-primary bg-opacity-10 rounded p-2{% endif %}">
+                            <div class="me-3">
+                                {% if assess.id == assessment.id %}
+                                    <i class="bi bi-circle-fill text-primary"></i>
+                                {% else %}
+                                    <i class="bi bi-circle text-muted"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="small">
+                                    {% if assess.id == assessment.id %}
+                                        <strong>{{ assess.date.strftime('%d %B %Y') }}</strong>
+                                    {% else %}
+                                        <a href="{{ url_for('assessments.view', id=assess.id) }}" class="text-decoration-none">
+                                            {{ assess.date.strftime('%d %B %Y') }}
+                                        </a>
+                                    {% endif %}
+                                </div>
+                                {% if assess.weight %}
+                                <div class="text-muted small">{{ assess.weight }} kg</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% if all_assessments|length > 5 %}
+                        <div class="text-center mt-2">
+                            <a href="{{ url_for('assessments.index', client_id=client.id) }}" class="btn btn-sm btn-outline-primary">
+                                View All Assessments
+                            </a>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted small mb-0">No other assessments found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

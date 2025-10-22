@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ client.name }} - Sistem PT{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-pencil"></i> Edit Klien: {{ client.name }}</h1>
+    <div>
+        <a href="{{ url_for('clients.view', id=client.id) }}" class="btn btn-primary">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <!-- Basic Information -->
+                        <div class="col-md-6">
+                            <h5 class="mb-3">Informasi Dasar</h5>
+                            
+                            <div class="mb-3">
+                                {{ form.name.label(class="form-label") }}
+                                {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                                {% if form.name.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.name.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.photo.label(class="form-label") }}
+                                {{ form.photo(class="form-control" + (" is-invalid" if form.photo.errors else "")) }}
+                                {% if form.photo.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.photo.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Format: JPG, PNG (max 5MB)</div>
+                                <div id="photoPreview" class="mt-2 d-none">
+                                    <img src="" alt="Preview" class="img-thumbnail" style="max-height: 150px;">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                {{ form.email.label(class="form-label") }}
+                                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                                {% if form.email.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.email.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.phone.label(class="form-label") }}
+                                {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else "")) }}
+                                {% if form.phone.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.phone.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.birth_date.label(class="form-label") }}
+                                        {{ form.birth_date(class="form-control" + (" is-invalid" if form.birth_date.errors else "")) }}
+                                        {% if form.birth_date.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.birth_date.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.gender.label(class="form-label") }}
+                                        {{ form.gender(class="form-select" + (" is-invalid" if form.gender.errors else "")) }}
+                                        {% if form.gender.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.gender.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Additional Information -->
+                        <div class="col-md-6">
+                            <h5 class="mb-3">Informasi Fisik</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.height.label(class="form-label") }}
+                                        {{ form.height(class="form-control" + (" is-invalid" if form.height.errors else "")) }}
+                                        {% if form.height.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.height.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.start_weight.label(class="form-label") }}
+                                        {{ form.start_weight(class="form-control" + (" is-invalid" if form.start_weight.errors else "")) }}
+                                        {% if form.start_weight.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.start_weight.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.medical_notes.label(class="form-label") }}
+                                {{ form.medical_notes(class="form-control" + (" is-invalid" if form.medical_notes.errors else ""), rows="3") }}
+                                {% if form.medical_notes.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.medical_notes.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Submit Buttons -->
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('clients.view', id=client.id) }}" class="btn btn-secondary">
+                            <i class="bi bi-x"></i> Batal
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check"></i> Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Client Info and Actions -->
+    <div class="col-md-4">
+        <!-- Client Summary -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5><i class="bi bi-info-circle"></i> Ringkasan Klien</h5>
+            </div>
+            <div class="card-body"> 
+                <table class="table table-sm table-borderless">
+                    <tr>
+                        <td><strong>Bergabung:</strong></td>
+                        <td>{{ client.created_at.strftime('%d %b %Y') }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Assessment:</strong></td>
+                        <td>{{ client.assessments|length }} kali</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Program:</strong></td>
+                        <td>{{ client.workout_plans|length }} program</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Sesi:</strong></td>
+                        <td>{{ client.sessions|length }} sesi</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Danger Zone -->
+        <div class="card border-danger mt-3">
+            <div class="card-header bg-danger text-white">
+                <i class="bi bi-exclamation-triangle-fill"></i> Zona Berbahaya
+            </div>
+            <div class="card-body">
+                <p class="small text-danger mb-3">
+                    <strong>Perhatian:</strong> Menghapus klien akan menghapus semua data terkait termasuk assessment, program, dan sesi.
+                </p>
+                <button type="button" class="btn btn-danger w-100" 
+                        onclick="confirmDeleteClient()"
+                        onmouseover="this.classList.replace('btn-danger', 'btn-outline-danger')" 
+                        onmouseout="this.classList.replace('btn-outline-danger', 'btn-danger')">
+                    <i class="bi bi-trash"></i> Hapus Klien
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Client Modal -->
+<div class="modal fade" id="deleteClientModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Konfirmasi Hapus Klien</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin menghapus klien <strong>{{ client.name }}</strong>?</p>
+                <p class="text-danger">
+                    <small>
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Tindakan ini tidak dapat dibatalkan dan akan menghapus semua data terkait klien.
+                    </small>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <form method="POST" action="{{ url_for('clients.delete', id=client.id) }}" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">Hapus Klien</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function confirmDeletePhoto() {
+    new bootstrap.Modal(document.getElementById('deletePhotoModal')).show();
+}
+
+function confirmDeleteClient() {
+    new bootstrap.Modal(document.getElementById('deleteClientModal')).show();
+}
+
+// Preview uploaded photo
+document.querySelector('input[type="file"]').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // You can add photo preview functionality here if needed
+            console.log('New photo selected:', file.name);
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}

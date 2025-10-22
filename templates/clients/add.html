@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Tambah Klien - Sistem PT{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-person-plus"></i> Tambah Klien Baru</h1>
+    <a href="{{ url_for('clients.index') }}" class="btn btn-primary">
+        <i class="bi bi-arrow-left"></i> Kembali
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <!-- Basic Information -->
+                        <div class="col-md-6">
+                            <h5 class="mb-3">Informasi Dasar</h5>
+                            
+                            <div class="mb-3">
+                                {{ form.name.label(class="form-label") }}
+                                {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                                {% if form.name.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.name.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.photo.label(class="form-label") }}
+                                {{ form.photo(class="form-control" + (" is-invalid" if form.photo.errors else "")) }}
+                                {% if form.photo.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.photo.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Format: JPG, PNG (max 5MB)</div>
+                                <div id="photoPreview" class="mt-2 d-none">
+                                    <img src="" alt="Preview" class="img-thumbnail" style="max-height: 150px;">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                {{ form.email.label(class="form-label") }}
+                                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                                {% if form.email.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.email.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.phone.label(class="form-label") }}
+                                {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else "")) }}
+                                {% if form.phone.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.phone.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.birth_date.label(class="form-label") }}
+                                        {{ form.birth_date(class="form-control" + (" is-invalid" if form.birth_date.errors else "")) }}
+                                        {% if form.birth_date.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.birth_date.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.gender.label(class="form-label") }}
+                                        {{ form.gender(class="form-select" + (" is-invalid" if form.gender.errors else "")) }}
+                                        {% if form.gender.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.gender.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Additional Information -->
+                        <div class="col-md-6">
+                            <h5 class="mb-3">Informasi Fisik</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.height.label(class="form-label") }}
+                                        {{ form.height(class="form-control" + (" is-invalid" if form.height.errors else "")) }}
+                                        {% if form.height.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.height.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.start_weight.label(class="form-label") }}
+                                        {{ form.start_weight(class="form-control" + (" is-invalid" if form.start_weight.errors else "")) }}
+                                        {% if form.start_weight.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.start_weight.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.medical_notes.label(class="form-label") }}
+                                {{ form.medical_notes(class="form-control" + (" is-invalid" if form.medical_notes.errors else ""), rows="3") }}
+                                {% if form.medical_notes.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.medical_notes.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Buttons -->
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('clients.index') }}" class="btn btn-secondary">
+                            <i class="bi bi-x"></i> Batal
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check"></i> Simpan Klien
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Help Panel -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-info-circle"></i> Panduan</h5>
+            </div>
+            <div class="card-body">
+                <h6>Informasi Wajib:</h6>
+                <ul class="small">
+                    <li>Nama lengkap klien</li>
+                    <li>Nomor telepon untuk komunikasi</li>
+                    <li>Jenis kelamin untuk program yang sesuai</li>
+                </ul>
+                
+                <h6 class="mt-3">Tips:</h6>
+                <ul class="small">
+                    <li>Lengkapi data fisik untuk evaluasi berkala</li>
+                    <li>Catat kondisi medis yang relevan</li>
+                    <li>Tanggal lahir membantu perencanaan program</li>
+                    <li>Foto profil memudahkan identifikasi</li>
+                </ul>
+                
+                <div class="alert alert-info mt-3">
+                    <small>
+                        <i class="bi bi-lightbulb"></i>
+                        Setelah menambah klien, Anda dapat langsung membuat assessment awal dan workout plan.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Preview foto saat upload
+    document.addEventListener('DOMContentLoaded', function() {
+        const photoInput = document.getElementById('photo');
+        const photoPreview = document.getElementById('photoPreview');
+        const previewImg = photoPreview.querySelector('img');
+        
+        photoInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    photoPreview.classList.remove('d-none');
+                }
+                
+                reader.readAsDataURL(this.files[0]);
+            } else {
+                photoPreview.classList.add('d-none');
+            }
+        });
+    });
+</script>
+{% endblock %}

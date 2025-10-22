@@ -1,0 +1,71 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+prd.md
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Unit test / coverage / caching
+.coverage
+.coverage.*
+.cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Flask instance folder
+instance/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Environment files
+.env
+.env.local
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Databases
+*.sqlite
+*.db
+
+# Migrations (if used)
+migrations/
+
+# Editors / OS-specific
+.vscode/
+.idea/
+.DS_Store
+.python-version
+
+# Static uploads (user-generated files)
+static/uploads/*
+!static/uploads/.gitkeep

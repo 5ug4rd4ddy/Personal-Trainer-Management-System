@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}New Training Session - {{ client.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-plus-circle me-2"></i>New Training Session - {{ client.name }}</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('clients.index') }}">Clients</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('clients.view', id=client.id) }}">{{ client.name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('sessions.index', client_id=client.id) }}">Sessions</a></li>
+                    <li class="breadcrumb-item active">New Session</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="{{ url_for('sessions.index', client_id=client.id) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to Sessions
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Session Form -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-calendar-plus me-2"></i>Session Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Basic Information -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.date.label(class="form-label") }}
+                                {{ form.date(class="form-control") }}
+                                {% if form.date.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.date.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Date of the training session</div>
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.duration.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.duration(class="form-control") }}
+                                    <span class="input-group-text">minutes</span>
+                                </div>
+                                {% if form.duration.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.duration.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Expected duration of the session</div>
+                            </div>
+                        </div>
+
+                        <!-- Workout Plan Selection -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                {{ form.workout_plan_id.label(class="form-label") }}
+                                {{ form.workout_plan_id(class="form-select", id="workoutPlanSelect") }}
+                                {% if form.workout_plan_id.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.workout_plan_id.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Select a workout plan for this session (optional)</div>
+                            </div>
+                        </div>
+
+                        <!-- Session Status -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    {{ form.completed(class="form-check-input") }}
+                                    {{ form.completed.label(class="form-check-label") }}
+                                </div>
+                                <div class="form-text">Check if this session has already been completed</div>
+                            </div>
+                        </div>
+
+                        <!-- Performance Metrics (shown when completed) -->
+                        <div id="performanceMetrics" style="display: none;">
+                            <h6 class="border-bottom pb-2 mb-3">Performance Metrics</h6>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    {{ form.total_weight.label(class="form-label") }}
+                                    <div class="input-group">
+                                        {{ form.total_weight(class="form-control", step="0.5") }}
+                                        <span class="input-group-text">kg</span>
+                                    </div>
+                                    {% if form.total_weight.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.total_weight.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Total weight lifted</div>
+                                </div>
+                                <div class="col-md-4">
+                                    {{ form.total_reps.label(class="form-label") }}
+                                    {{ form.total_reps(class="form-control") }}
+                                    {% if form.total_reps.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.total_reps.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Total repetitions</div>
+                                </div>
+                                <div class="col-md-4">
+                                    {{ form.calories_burned.label(class="form-label") }}
+                                    <div class="input-group">
+                                        {{ form.calories_burned(class="form-control") }}
+                                        <span class="input-group-text">cal</span>
+                                    </div>
+                                    {% if form.calories_burned.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.calories_burned.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Estimated calories burned</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <h6 class="border-bottom pb-2 mb-3">Session Notes</h6>
+                        <div class="mb-4">
+                            {{ form.notes.label(class="form-label") }}
+                            {{ form.notes(class="form-control", rows="4") }}
+                            {% if form.notes.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.notes.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Notes about the session, exercises performed, client feedback, etc.</div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i>Create Session
+                            </button>
+                            <a href="{{ url_for('sessions.index', client_id=client.id) }}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Panel -->
+        <div class="col-lg-4">
+            <!-- Client Info -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-person me-2"></i>Client Information</h6>
+                </div>
+                <div class="card-body"> 
+                    <div class="small">
+                        <div class="mb-2">
+                            <strong>Phone:</strong> {{ client.phone }}
+                        </div>
+                        {% if client.email %}
+                        <div class="mb-2">
+                            <strong>Email:</strong> {{ client.email }}
+                        </div>
+                        {% endif %}
+                        {% if client.goals %}
+                        <div class="mb-2">
+                            <strong>Goals:</strong> {{ client.goals }}
+                        </div>
+                        {% endif %}
+                        {% if client.medical_conditions %}
+                        <div class="mb-2">
+                            <strong>Medical Conditions:</strong> {{ client.medical_conditions }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Sessions -->
+            {% if recent_sessions %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Sessions</h6>
+                </div>
+                <div class="card-body">
+                    {% for session in recent_sessions %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <div class="fw-medium">{{ session.date.strftime('%d %B %Y') }}</div>
+                            <small class="text-muted">
+                                {% if session.completed %}
+                                    <i class="bi bi-check-circle text-success me-1"></i>Completed
+                                {% else %}
+                                    <i class="bi bi-clock text-warning me-1"></i>Pending
+                                {% endif %}
+                                {% if session.duration %} • {{ session.duration }}min{% endif %}
+                            </small>
+                        </div>
+                        <a href="{{ url_for('sessions.view', id=session.id) }}" class="btn btn-sm btn-outline-primary">
+                            View
+                        </a>
+                    </div>
+                    {% if not loop.last %}<hr class="my-2">{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Available Workout Plans -->
+            {% if workout_plans %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-list-task me-2"></i>Available Workout Plans</h6>
+                </div>
+                <div class="card-body">
+                    {% for plan in workout_plans %}
+                    <div class="mb-2">
+                        <div class="fw-medium">{{ plan.name }}</div>
+                        <small class="text-muted">
+                            {{ plan.exercises|length }} exercises
+                            {% if plan.description %} • {{ plan.description[:50] }}{% if plan.description|length > 50 %}...{% endif %}{% endif %}
+                        </small>
+                    </div>
+                    {% if not loop.last %}<hr class="my-2">{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Session Guidelines -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Session Guidelines</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-primary small">Planning Tips</h6>
+                        <ul class="small mb-0">
+                            <li>Schedule sessions at consistent times</li>
+                            <li>Allow adequate rest between sessions</li>
+                            <li>Consider client's fitness level and goals</li>
+                            <li>Plan for proper warm-up and cool-down</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary small">During the Session</h6>
+                        <ul class="small mb-0">
+                            <li>Monitor form and technique</li>
+                            <li>Track weights and repetitions</li>
+                            <li>Note client feedback and performance</li>
+                            <li>Adjust intensity as needed</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-0">
+                        <h6 class="text-primary small">After the Session</h6>
+                        <ul class="small mb-0">
+                            <li>Record performance metrics</li>
+                            <li>Note any issues or concerns</li>
+                            <li>Plan for next session</li>
+                            <li>Update client notes and plan</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Show/hide performance metrics based on completion status
+function togglePerformanceMetrics() {
+    const completedCheckbox = document.getElementById('completed');
+    const performanceMetrics = document.getElementById('performanceMetrics');
+    
+    if (completedCheckbox && performanceMetrics) {
+        if (completedCheckbox.checked) {
+            performanceMetrics.style.display = 'block';
+        } else {
+            performanceMetrics.style.display = 'none';
+            // Clear performance metric fields when hiding
+            document.getElementById('total_weight').value = '';
+            document.getElementById('total_reps').value = '';
+            document.getElementById('calories_burned').value = '';
+        }
+    }
+}
+
+// Form validation
+function validateForm() {
+    const date = document.getElementById('date').value;
+    const duration = document.getElementById('duration').value;
+    
+    if (!date) {
+        alert('Please select a date for the session.');
+        return false;
+    }
+    
+    if (duration && (parseInt(duration) <= 0 || parseInt(duration) > 300)) {
+        alert('Please enter a valid duration (1-300 minutes).');
+        return false;
+    }
+    
+    return true;
+}
+
+// Add event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const completedCheckbox = document.getElementById('completed');
+    if (completedCheckbox) {
+        completedCheckbox.addEventListener('change', togglePerformanceMetrics);
+        // Initialize on page load
+        togglePerformanceMetrics();
+    }
+    
+    // Form submission validation
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!validateForm()) {
+                e.preventDefault();
+            }
+        });
+    }
+    
+    // Set default date to today
+    const dateInput = document.getElementById('date');
+    if (dateInput && !dateInput.value) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.value = today;
+    }
+});
+</script>
+{% endblock %}

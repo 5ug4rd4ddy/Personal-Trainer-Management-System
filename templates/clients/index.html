@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Daftar Klien - Sistem PT{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-people"></i> Daftar Klien</h1>
+    <a href="{{ url_for('clients.add') }}" class="btn btn-primary">
+        <i class="bi bi-person-plus"></i> Tambah Klien
+    </a>
+</div>
+
+<!-- Search and Filter -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <form method="GET" action="{{ url_for('clients.index') }}">
+            <div class="input-group">
+                <input type="text" class="form-control" name="search" 
+                       placeholder="Cari nama klien..." value="{{ request.args.get('search', '') }}">
+                <button class="btn btn-outline-secondary" type="submit">
+                    <i class="bi bi-search"></i> Cari
+                </button>
+                {% if request.args.get('search') %}
+                <a href="{{ url_for('clients.index') }}" class="btn btn-outline-danger">
+                    <i class="bi bi-x"></i> Reset
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+    <div class="col-md-6 text-end">
+        <small class="text-muted">
+            Menampilkan {{ clients.items|length }} dari {{ clients.total }} klien
+        </small>
+    </div>
+</div>
+
+<!-- Clients Table -->
+<div class="card">
+    <div class="card-body">
+        {% if clients.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Foto</th>
+                        <th>Nama</th>
+                        <th>Email</th>
+                        <th>Telepon</th>
+                        <th>Umur</th>
+                        <th>Bergabung</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for client in clients.items %}
+                    <tr>
+                        <td>
+                            {% if client.photo %}
+                            <img src="{{ url_for('static', filename='uploads/' + client.photo) }}" 
+                                 alt="{{ client.name }}" class="rounded-circle" width="40" height="40">
+                            {% else %}
+                            <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" 
+                                 style="width: 40px; height: 40px;">
+                                <i class="bi bi-person text-white"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ client.name }}</strong>
+                        </td>
+                        <td>{{ client.email or '-' }}</td>
+                        <td>{{ client.phone or '-' }}</td>
+                        <td>{{ client.age or '-' }} tahun</td>
+                        <td>{{ client.created_at.strftime('%d %b %Y') }}</td>
+                        <td>
+                            <span class="badge bg-success">Aktif</span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{{ url_for('clients.view', id=client.id) }}" 
+                                   class="btn btn-outline-primary" title="Lihat Detail">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ url_for('clients.edit', id=client.id) }}" 
+                                   class="btn btn-outline-warning" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" 
+                                        onclick="confirmDelete({{ client.id }}, '{{ client.name }}')" title="Hapus">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if clients.pages > 1 %}
+        <nav aria-label="Pagination">
+            <ul class="pagination justify-content-center">
+                {% if clients.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('clients.index', page=clients.prev_num, search=request.args.get('search', '')) }}">
+                        <i class="bi bi-chevron-left"></i> Sebelumnya
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in clients.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != clients.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('clients.index', page=page_num, search=request.args.get('search', '')) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if clients.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('clients.index', page=clients.next_num, search=request.args.get('search', '')) }}">
+                        Selanjutnya <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-people" style="font-size: 4rem; color: #ccc;"></i>
+            <h4 class="mt-3">Belum Ada Klien</h4>
+            <p class="text-muted">Mulai dengan menambahkan klien pertama Anda.</p>
+            <a href="{{ url_for('clients.add') }}" class="btn btn-primary">
+                <i class="bi bi-person-plus"></i> Tambah Klien Pertama
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Konfirmasi Hapus</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin menghapus klien <strong id="clientName"></strong>?</p>
+                <p class="text-danger"><small>Tindakan ini tidak dapat dibatalkan dan akan menghapus semua data terkait klien.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">Hapus</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function confirmDelete(clientId, clientName) {
+    document.getElementById('clientName').textContent = clientName;
+    document.getElementById('deleteForm').action = "{{ url_for('clients.delete', id=0) }}".replace('0', clientId);
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

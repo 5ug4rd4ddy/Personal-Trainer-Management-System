@@ -1,0 +1,441 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Assessment - {{ client.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-pencil me-2"></i>Edit Assessment - {{ client.name }}</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('clients.index') }}">Clients</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('clients.view', id=client.id) }}">{{ client.name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('assessments.index', client_id=client.id) }}">Assessments</a></li>
+                    <li class="breadcrumb-item active">Edit {{ assessment.date.strftime('%d %B %Y') }}</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="{{ url_for('assessments.view', id=assessment.id) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to Assessment
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Assessment Form -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-clipboard-data me-2"></i>Assessment Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Date -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.date.label(class="form-label") }}
+                                {{ form.date(class="form-control") }}
+                                {% if form.date.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.date.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Basic Measurements -->
+                        <h6 class="border-bottom pb-2 mb-3">Basic Measurements</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.weight.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.weight(class="form-control") }}
+                                    <span class="input-group-text">kg</span>
+                                </div>
+                                {% if form.weight.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.weight.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.height.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.height(class="form-control") }}
+                                    <span class="input-group-text">cm</span>
+                                </div>
+                                {% if form.height.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.height.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Body Composition -->
+                        <h6 class="border-bottom pb-2 mb-3">Body Composition</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.body_fat.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.body_fat(class="form-control") }}
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                {% if form.body_fat.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.body_fat.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.muscle_mass.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.muscle_mass(class="form-control") }}
+                                    <span class="input-group-text">kg</span>
+                                </div>
+                                {% if form.muscle_mass.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.muscle_mass.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Body Measurements -->
+                        <h6 class="border-bottom pb-2 mb-3">Body Measurements</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                {{ form.chest.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.chest(class="form-control") }}
+                                    <span class="input-group-text">cm</span>
+                                </div>
+                                {% if form.chest.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.chest.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.waist.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.waist(class="form-control") }}
+                                    <span class="input-group-text">cm</span>
+                                </div>
+                                {% if form.waist.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.waist.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.hips.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.hips(class="form-control") }}
+                                    <span class="input-group-text">cm</span>
+                                </div>
+                                {% if form.hips.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.hips.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                {{ form.arm.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.arm(class="form-control") }}
+                                    <span class="input-group-text">cm</span>
+                                </div>
+                                {% if form.arm.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.arm.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.thigh.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.thigh(class="form-control") }}
+                                    <span class="input-group-text">cm</span>
+                                </div>
+                                {% if form.thigh.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.thigh.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.neck.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.neck(class="form-control") }}
+                                    <span class="input-group-text">cm</span>
+                                </div>
+                                {% if form.neck.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.neck.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Semua fitur foto assessment dihapus sesuai permintaan -->
+                        <!-- Notes -->
+                        <h6 class="border-bottom pb-2 mb-3">Additional Notes</h6>
+                        <div class="mb-4">
+                            {{ form.notes.label(class="form-label") }}
+                            {{ form.notes(class="form-control", rows="4", placeholder="Add any additional notes about this assessment...") }}
+                            {% if form.notes.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.notes.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i>Update Assessment
+                            </button>
+                            <a href="{{ url_for('assessments.view', id=assessment.id) }}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Cancel
+                            </a>
+                            <button type="button" class="btn btn-danger ms-auto" onclick="confirmDeleteAssessment()">
+                                <i class="bi bi-trash me-1"></i>Delete Assessment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Panel -->
+        <div class="col-lg-4">
+            <!-- Current Assessment Info -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Assessment Info</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <strong>Date:</strong> {{ assessment.date.strftime('%d %B %Y') }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Client:</strong> {{ client.name }}
+                    </div>
+                    {% if assessment.weight %}
+                    <div class="mb-2">
+                        <strong>Current Weight:</strong> {{ assessment.weight }} kg
+                    </div>
+                    {% endif %}
+                    {% if assessment.height %}
+                    <div class="mb-2">
+                        <strong>Height:</strong> {{ assessment.height }} cm
+                    </div>
+                    {% endif %}
+                    {% if assessment.weight and assessment.height %}
+                    {% set bmi = ((assessment.weight / ((assessment.height / 100) ** 2)) | round(1)) %}
+                    <div class="mb-2">
+                        <strong>BMI:</strong> {{ bmi }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Guidelines -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Measurement Guidelines</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-primary small">Basic Measurements</h6>
+                        <ul class="small mb-0">
+                            <li>Weight: Record in kilograms (kg)</li>
+                            <li>Height: Record in centimeters (cm)</li>
+                            <li>Take measurements at the same time of day</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary small">Body Composition</h6>
+                        <ul class="small mb-0">
+                            <li>Body Fat: Use body fat scale or calipers (%)</li>
+                            <li>Muscle Mass: Total muscle mass in kg</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary small">Body Measurements</h6>
+                        <ul class="small mb-0">
+                            <li>Chest: Measure at nipple level</li>
+                            <li>Waist: Measure at narrowest point</li>
+                            <li>Hips: Measure at widest point</li>
+                            <li>Arm: Measure at largest point of bicep</li>
+                            <li>Thigh: Measure at largest point</li>
+                            <li>Neck: Measure just below Adam's apple</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client Info -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-person me-2"></i>Client Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        {% if client.photo %}
+                            <img src="{{ url_for('static', filename='uploads/' + client.photo) }}" 
+                                 alt="{{ client.name }}" class="profile-img rounded-circle me-3">
+                        {% else %}
+                            <div class="profile-img rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3">
+                                <i class="bi bi-person-fill text-white"></i>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <h6 class="mb-1">{{ client.name }}</h6>
+                            <small class="text-muted">{{ client.age }} years old</small>
+                        </div>
+                    </div>
+                    
+                    <div class="small">
+                        <div class="mb-2">
+                            <strong>Phone:</strong> {{ client.phone }}
+                        </div>
+                        {% if client.email %}
+                        <div class="mb-2">
+                            <strong>Email:</strong> {{ client.email }}
+                        </div>
+                        {% endif %}
+                        {% if client.goals %}
+                        <div class="mb-2">
+                            <strong>Goals:</strong> {{ client.goals }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Photo Modal -->
+{% if assessment.photo %}
+<div class="modal fade" id="deletePhotoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Photo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the assessment photo?</p>
+                <p class="text-danger small">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('assessments.delete_photo', id=assessment.id) }}" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">Delete Photo</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Delete Assessment Modal -->
+<div class="modal fade" id="deleteAssessmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Assessment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this assessment from <strong>{{ assessment.date.strftime('%d %B %Y') }}</strong>?</p>
+                <p class="text-danger small">This action cannot be undone and will permanently remove all assessment data including photos.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('assessments.delete', id=assessment.id) }}" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">Delete Assessment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function confirmDeletePhoto() {
+    new bootstrap.Modal(document.getElementById('deletePhotoModal')).show();
+}
+
+function confirmDeleteAssessment() {
+    new bootstrap.Modal(document.getElementById('deleteAssessmentModal')).show();
+}
+
+// Preview uploaded photo
+document.querySelector('input[type="file"]').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            console.log('New photo selected:', file.name);
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Auto-calculate BMI when weight and height are entered
+function calculateBMI() {
+    const weight = parseFloat(document.getElementById('weight').value);
+    const height = parseFloat(document.getElementById('height').value);
+    
+    if (weight && height) {
+        const bmi = (weight / Math.pow(height / 100, 2)).toFixed(1);
+        console.log('BMI:', bmi);
+    }
+}
+
+document.getElementById('weight').addEventListener('input', calculateBMI);
+document.getElementById('height').addEventListener('input', calculateBMI);
+</script>
+{% endblock %}

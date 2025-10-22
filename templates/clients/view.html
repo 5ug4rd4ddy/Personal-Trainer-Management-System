@@ -1,0 +1,597 @@
+{% extends "base.html" %}
+
+{% block title %}{{ client.name }} - Detail Klien{% endblock %}
+
+{% block extra_head %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Data dummy untuk chart (nantinya akan diambil dari API)
+    const clientId = {{ client.id }};
+    
+    // Ambil data exercise dari API
+    loadExerciseOptions();
+    
+    // Inisialisasi chart
+    initCharts();
+    
+    // Event listener untuk filter
+    document.getElementById('timeFilter').addEventListener('change', updateCharts);
+    document.getElementById('exerciseFilter').addEventListener('change', updateCharts);
+    
+    function initCharts() {
+        // Chart Volume Latihan
+        const volumeCtx = document.getElementById('volumeChart').getContext('2d');
+        window.volumeChart = new Chart(volumeCtx, {
+            type: 'line',
+            data: {
+                labels: ['1 Jan', '8 Jan', '15 Jan', '22 Jan', '29 Jan', '5 Feb', '12 Feb'],
+                datasets: [{
+                    label: 'Total Volume (kg)',
+                    data: [1200, 1350, 1400, 1380, 1500, 1600, 1650],
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Volume (kg)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Tanggal'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Chart Perbandingan Kelompok Otot
+        const muscleCtx = document.getElementById('muscleGroupChart').getContext('2d');
+        window.muscleChart = new Chart(muscleCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Dada', 'Punggung', 'Kaki', 'Bahu', 'Lengan', 'Core'],
+                datasets: [{
+                    label: 'Volume Latihan',
+                    data: [80, 65, 90, 70, 60, 50],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgb(54, 162, 235)',
+                    pointBackgroundColor: 'rgb(54, 162, 235)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(54, 162, 235)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                elements: {
+                    line: {
+                        borderWidth: 3
+                    }
+                },
+                scales: {
+                    r: {
+                        angleLines: {
+                            display: true
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 100
+                    }
+                }
+            }
+        });
+        
+        // Chart Tren Performa
+        const perfCtx = document.getElementById('performanceChart').getContext('2d');
+        window.perfChart = new Chart(perfCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Bench Press', 'Squat', 'Deadlift', 'Shoulder Press', 'Barbell Row'],
+                datasets: [{
+                    label: 'Beban Maksimal (kg)',
+                    data: [80, 120, 150, 50, 70],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 99, 132)',
+                        'rgb(54, 162, 235)',
+                        'rgb(255, 206, 86)',
+                        'rgb(75, 192, 192)',
+                        'rgb(153, 102, 255)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Beban (kg)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    function updateCharts() {
+        const timeFilter = document.getElementById('timeFilter').value;
+        const exerciseFilter = document.getElementById('exerciseFilter').value;
+        
+        // Simulasi update data berdasarkan filter
+        // Dalam implementasi sebenarnya, ini akan memanggil API
+        console.log(`Updating charts with time filter: ${timeFilter} days, exercise filter: ${exerciseFilter}`);
+        
+        // Contoh update data chart volume latihan
+        if (timeFilter === '7') {
+            window.volumeChart.data.labels = ['6 Feb', '7 Feb', '8 Feb', '9 Feb', '10 Feb', '11 Feb', '12 Feb'];
+            window.volumeChart.data.datasets[0].data = [1500, 1550, 1600, 1620, 1630, 1640, 1650];
+        } else if (timeFilter === '14') {
+            window.volumeChart.data.labels = ['30 Jan', '1 Feb', '3 Feb', '5 Feb', '7 Feb', '9 Feb', '11 Feb', '12 Feb'];
+            window.volumeChart.data.datasets[0].data = [1400, 1450, 1500, 1550, 1580, 1600, 1630, 1650];
+        } else {
+            // Default 30 hari
+            window.volumeChart.data.labels = ['15 Jan', '22 Jan', '29 Jan', '5 Feb', '12 Feb'];
+            window.volumeChart.data.datasets[0].data = [1350, 1400, 1500, 1600, 1650];
+        }
+        
+        // Update chart
+        window.volumeChart.update();
+        
+        // Simulasi update data untuk chart kelompok otot
+        if (exerciseFilter === 'bench_press') {
+            window.muscleChart.data.datasets[0].data = [90, 50, 40, 60, 70, 30];
+        } else if (exerciseFilter === 'squat') {
+            window.muscleChart.data.datasets[0].data = [40, 50, 95, 60, 50, 70];
+        } else if (exerciseFilter === 'deadlift') {
+            window.muscleChart.data.datasets[0].data = [50, 90, 85, 40, 60, 80];
+        } else {
+            // Default semua exercise
+            window.muscleChart.data.datasets[0].data = [80, 65, 90, 70, 60, 50];
+        }
+        
+        // Update chart
+        window.muscleChart.update();
+        
+        // Simulasi update data untuk chart performa
+        if (exerciseFilter !== 'all') {
+            // Filter hanya menampilkan exercise yang dipilih
+            const exerciseData = {
+                'bench_press': {
+                    labels: ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'],
+                    data: [70, 75, 77.5, 80]
+                },
+                'squat': {
+                    labels: ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'],
+                    data: [100, 110, 115, 120]
+                },
+                'deadlift': {
+                    labels: ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'],
+                    data: [130, 140, 145, 150]
+                }
+            };
+            
+            if (exerciseData[exerciseFilter]) {
+                window.perfChart.data.labels = exerciseData[exerciseFilter].labels;
+                window.perfChart.data.datasets[0].data = exerciseData[exerciseFilter].data;
+                window.perfChart.data.datasets[0].label = `Performa ${exerciseFilter.replace('_', ' ')} (kg)`;
+            }
+        } else {
+            // Default semua exercise
+            window.perfChart.data.labels = ['Bench Press', 'Squat', 'Deadlift', 'Shoulder Press', 'Barbell Row'];
+            window.perfChart.data.datasets[0].data = [80, 120, 150, 50, 70];
+            window.perfChart.data.datasets[0].label = 'Beban Maksimal (kg)';
+        }
+        
+        // Update chart
+        window.perfChart.update();
+    }
+    
+    // Inisialisasi dengan filter default
+    updateCharts();
+    
+    // Fungsi untuk mengambil data exercise dari API
+    function loadExerciseOptions() {
+        fetch(`/api/${clientId}/exercises`)
+            .then(response => response.json())
+            .then(data => {
+                const exerciseFilter = document.getElementById('exerciseFilter');
+                exerciseFilter.innerHTML = ''; // Kosongkan dropdown
+                
+                // Tambahkan opsi dari API
+                data.forEach(exercise => {
+                    const option = document.createElement('option');
+                    option.value = exercise.id;
+                    option.textContent = exercise.name;
+                    exerciseFilter.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching exercise data:', error));
+    }
+    
+    // Fungsi untuk mengambil data dari API (untuk implementasi selanjutnya)
+    function fetchAnalyticsData(clientId, timeFilter, exerciseFilter) {
+        // Contoh implementasi fetch API
+        // fetch(`/api/clients/${clientId}/analytics?time=${timeFilter}&exercise=${exerciseFilter}`)
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         updateChartsWithData(data);
+        //     })
+        //     .catch(error => console.error('Error fetching analytics data:', error));
+    }
+});
+</script>
+{% endblock extra_head %}
+
+{% block content %}
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-person"></i> {{ client.name }}</h1>
+    <div>
+        <a href="{{ url_for('clients.edit', id=client.id) }}" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Edit
+        </a>
+    </div>
+</div>
+
+<!-- Client Overview -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-flex mb-3">
+                            <div class="me-3">
+                                {% if client.photo %}
+                                <img src="{{ url_for('static', filename='uploads/' + client.photo) }}" 
+                                     alt="{{ client.name }}" class="rounded-circle" 
+                                     style="width: 60px; height: 60px; object-fit: cover;">
+                                {% else %}
+                                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" 
+                                     style="width: 60px; height: 60px;">
+                                    <i class="bi bi-person-fill text-white" style="font-size: 1.5rem;"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div class="text-muted small">Klien</div>
+                                <h5 class="mb-0">{{ client.name }}</h5>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <i class="bi bi-calendar-date fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small">Tanggal Bergabung</div>
+                                        <div class="fw-bold">{{ client.created_at.strftime('%d %b %Y') }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <i class="bi bi-person-badge fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small">Usia</div>
+                                        <div class="fw-bold">{{ ((now.year - client.birth_date.year) if client.birth_date else '-') }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <i class="bi bi-gender-ambiguous fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small">Gender</div>
+                                        <div class="fw-bold">{{ client.gender }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <i class="bi bi-clipboard-data fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small">Assessment</div>
+                                        <div class="fw-bold">{{ assessments|length }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <div class="btn-group">
+                                <a href="{{ url_for('assessments.add', client_id=client.id) }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-clipboard-plus"></i> Assessment
+                                </a>
+                                <a href="{{ url_for('workout_plans.add', client_id=client.id) }}" class="btn btn-outline-success btn-sm">
+                                    <i class="bi bi-plus-circle"></i> Program
+                                </a>
+                                <a href="{{ url_for('sessions.add', client_id=client.id) }}" class="btn btn-outline-dark btn-sm">
+                                    <i class="bi bi-calendar-plus"></i> Sesi
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="bi bi-envelope fs-3"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small">Email</div>
+                                <div class="fw-bold">{{ client.email or '-' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="bi bi-telephone fs-3"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small">Telepon</div>
+                                <div class="fw-bold">{{ client.phone or '-' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Program Latihan -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0"><i class="bi bi-list-check"></i> Program Latihan</h5>
+            <a href="{{ url_for('workout_plans.index', client_id=client.id) }}" class="btn btn-sm btn-outline-dark">
+                Lihat Semua
+            </a>
+        </div>
+        <div class="row row-cols-1 row-cols-md-3 g-3">
+            {% if workout_plans %}
+            {% for plan in workout_plans %}
+            <div class="col">
+                <a href="{{ url_for('workout_plans.view', id=plan.id) }}" class="text-decoration-none">
+                    <div class="card h-100 hover-shadow">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title mb-0 text-dark">{{ plan.plan_name }}</h5>
+                                {% if plan.is_active %}<span class="badge bg-success">Aktif</span>{% endif %}
+                            </div>
+                            <p class="card-text text-muted">
+                                <i class="bi bi-calendar-date me-2" style="font-size: 1.1rem;"></i>
+                                {% if plan.start_date %}{{ plan.start_date.strftime('%d %b %Y') }}{% else %}Belum diatur{% endif %}
+                                {% if plan.end_date %} - {{ plan.end_date.strftime('%d %b %Y') }}{% endif %}
+                            </p>
+                            <p class="card-text text-dark">
+                                <i class="bi bi-clock me-2" style="font-size: 1.1rem;"></i> {{ plan.duration }} minggu
+                                <br>
+                                <i class="bi bi-calendar-week me-2" style="font-size: 1.1rem;"></i> {{ plan.days_per_week }} hari/minggu
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="col-12 text-center py-3">
+                <i class="bi bi-list-ul" style="font-size: 3rem; color: #ccc;"></i>
+                <p class="text-muted mt-2">Belum ada program latihan</p>
+                <a href="{{ url_for('workout_plans.add', client_id=client.id) }}" class="btn btn-outline-success btn-sm">
+                    Buat Program Pertama
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Analitik Latihan Klien -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0"><i class="bi bi-graph-up"></i> Analitik Latihan Klien</h5>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="d-flex">
+                            <div class="me-2">
+                                <label for="timeFilter" class="form-label">Filter Waktu</label>
+                                <select class="form-select form-select-sm" id="timeFilter">
+                                    <option value="7">7 Hari Terakhir</option>
+                                    <option value="14">14 Hari Terakhir</option>
+                                    <option value="30" selected>1 Bulan</option>
+                                    <option value="90">3 Bulan</option>
+                                    <option value="180">6 Bulan</option>
+                                    <option value="365">1 Tahun</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="exerciseFilter" class="form-label">Exercise</label>
+                                <select class="form-select form-select-sm" id="exerciseFilter">
+                                    <option value="all" selected>Semua Exercise</option>
+                                    <option value="bench_press">Bench Press</option>
+                                    <option value="squat">Squat</option>
+                                    <option value="deadlift">Deadlift</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chart Utama - Volume Latihan -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card border">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Volume Latihan</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="volumeChart" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts Tambahan -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card border h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Perbandingan Kelompok Otot</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="muscleGroupChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card border h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Tren Performa</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="performanceChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Recent Sessions and Workout Plans -->
+<!-- <div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-calendar-check"></i> Sesi Terbaru</h5>
+                <a href="{{ url_for('sessions.index', client_id=client.id) }}" class="btn btn-sm btn-outline-dark">
+                    Lihat Semua
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_sessions %}
+                {% for session in recent_sessions %}
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                    <div>
+                        <strong>{{ session.date.strftime('%d %b %Y') }}</strong><br>
+                        <small class="text-muted">
+                            <i class="bi bi-clock me-1"></i>
+                            {% if session.start_time %}{{ session.start_time.strftime('%H:%M') }}{% else %}--:--{% endif %} - 
+                            {% if session.end_time %}{{ session.end_time.strftime('%H:%M') }}{% else %}--:--{% endif %}
+                            | <span class="badge bg-secondary">{{ session.session_type.title() if session.session_type else 'Tidak Ada' }}</span>
+                        </small>
+                    </div>
+                    <a href="{{ url_for('sessions.view', id=session.id) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                </div>
+                {% if not loop.last %}<div class="my-2"></div>{% endif %}
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-3">
+                    <i class="bi bi-calendar-x" style="font-size: 3rem; color: #ccc;"></i>
+                    <p class="text-muted mt-2">Belum ada sesi</p>
+                    <a href="{{ url_for('sessions.add', client_id=client.id) }}" class="btn btn-outline-primary btn-sm">
+                        Tambah Sesi Pertama
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-list-check"></i> Program Latihan</h5>
+                <a href="{{ url_for('workout_plans.index', client_id=client.id) }}" class="btn btn-sm btn-outline-dark">
+                    Lihat Semua
+                </a>
+            </div>
+            <div class="card-body">
+                {% if workout_plans %}
+                {% for plan in workout_plans %}
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                    <div>
+                        <strong>{{ plan.name }}</strong><br>
+                        <small class="text-muted">
+                            <i class="bi bi-calendar-date me-1"></i>{% if plan.start_date %}{{ plan.start_date.strftime('%d %b %Y') }}{% else %}Tanggal mulai belum diatur{% endif %}
+                            {% if plan.end_date %} - {{ plan.end_date.strftime('%d %b %Y') }}{% endif %}
+                            {% if plan.is_active %}<span class="badge bg-success ms-2">Aktif</span>{% endif %}
+                        </small>
+                    </div>
+                    <a href="{{ url_for('workout_plans.view', id=plan.id) }}" class="btn btn-sm btn-outline-success">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                </div>
+                {% if not loop.last %}<div class="my-2"></div>{% endif %}
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-3">
+                    <i class="bi bi-list-ul" style="font-size: 3rem; color: #ccc;"></i>
+                    <p class="text-muted mt-2">Belum ada program latihan</p>
+                    <a href="{{ url_for('workout_plans.add', client_id=client.id) }}" class="btn btn-outline-success btn-sm">
+                        Buat Program Pertama
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div> -->
+{% endblock %}

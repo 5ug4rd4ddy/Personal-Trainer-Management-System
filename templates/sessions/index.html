@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}Training Sessions - {{ client.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-calendar-check me-2"></i>Training Sessions - {{ client.name }}</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('clients.index') }}">Clients</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('clients.view', id=client.id) }}">{{ client.name }}</a></li>
+                    <li class="breadcrumb-item active">Sessions</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="{{ url_for('sessions.add', client_id=client.id) }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>New Session
+            </a>
+        </div>
+    </div>
+
+    <!-- Client Info Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="mb-1">{{ client.name }}</h5>
+                            <p class="text-muted mb-1">{{ client.age }} years old</p>
+                            <p class="text-muted mb-0">{{ client.phone }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="stat-card">
+                                        <h4 class="text-primary mb-0">{{ sessions.total }}</h4>
+                                        <small class="text-muted">Total Sessions</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-card">
+                                        <h4 class="text-success mb-0">{{ sessions.completed_count }}</h4>
+                                        <small class="text-muted">Completed</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-card">
+                                        <h4 class="text-warning mb-0">{{ sessions.pending_count }}</h4>
+                                        <small class="text-muted">Pending</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Date From</label>
+                            <input type="date" name="date_from" class="form-control" 
+                                   value="{{ request.args.get('date_from', '') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Date To</label>
+                            <input type="date" name="date_to" class="form-control" 
+                                   value="{{ request.args.get('date_to', '') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="">All Sessions</option>
+                                <option value="completed" {% if request.args.get('status') == 'completed' %}selected{% endif %}>Completed</option>
+                                <option value="pending" {% if request.args.get('status') == 'pending' %}selected{% endif %}>Pending</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-outline-primary me-2">
+                                <i class="bi bi-funnel me-1"></i>Filter
+                            </button>
+                            <a href="{{ url_for('sessions.index', client_id=client.id) }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Clear
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sessions List -->
+    <div class="row">
+        {% if sessions %}
+            {% for session in sessions %}
+            <div class="col-lg-6 col-xl-4 mb-4">
+                <div class="card h-100 {% if not session.completed %}border-warning{% endif %}">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            <i class="bi bi-calendar3 me-2"></i>{{ session.date.strftime('%d %B %Y') }}
+                        </h6>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" 
+                                    data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('sessions.view', id=session.id) }}">
+                                    <i class="bi bi-eye me-2"></i>View Details
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('sessions.edit', id=session.id) }}">
+                                    <i class="bi bi-pencil me-2"></i>Edit Session
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" 
+                                       onclick="confirmDelete('{{ session.id }}', {{ session.date.strftime('%d %B %Y')|tojson }})">
+                                    <i class="bi bi-trash me-2"></i>Delete Session
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Session Status -->
+                        <div class="mb-3">
+                            {% if session.completed %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i>Completed
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning">
+                                    <i class="bi bi-clock me-1"></i>Pending
+                                </span>
+                            {% endif %}
+                            
+                            {% if session.workout_plan %}
+                                <span class="badge bg-info ms-1">
+                                    <i class="bi bi-list-task me-1"></i>{{ session.workout_plan.name }}
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Session Duration -->
+                        {% if session.duration %}
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                <i class="bi bi-stopwatch me-1"></i>Duration: {{ session.duration }} minutes
+                            </small>
+                        </div>
+                        {% endif %}
+
+                        <!-- Exercises Count -->
+                        {% if session.exercises %}
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                <i class="bi bi-list-ul me-1"></i>{{ session.exercises|length }} exercises
+                            </small>
+                        </div>
+                        {% endif %}
+
+                        <!-- Notes Preview -->
+                        {% if session.notes %}
+                        <div class="mb-3">
+                            <p class="text-muted small mb-0">
+                                {{ session.notes[:100] }}{% if session.notes|length > 100 %}...{% endif %}
+                            </p>
+                        </div>
+                        {% endif %}
+
+                        <!-- Performance Metrics -->
+                        {% if session.completed %}
+                        <div class="row text-center">
+                            {% if session.total_weight %}
+                            <div class="col-4">
+                                <div class="stat-card">
+                                    <h6 class="text-primary mb-0">{{ session.total_weight }}kg</h6>
+                                    <small class="text-muted">Total Weight</small>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if session.total_reps %}
+                            <div class="col-4">
+                                <div class="stat-card">
+                                    <h6 class="text-success mb-0">{{ session.total_reps }}</h6>
+                                    <small class="text-muted">Total Reps</small>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if session.calories_burned %}
+                            <div class="col-4">
+                                <div class="stat-card">
+                                    <h6 class="text-warning mb-0">{{ session.calories_burned }}</h6>
+                                    <small class="text-muted">Calories</small>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                {% if session.completed %}
+                                    Completed {{ session.date.strftime('%d/%m/%Y') }}
+                                {% else %}
+                                    Scheduled for {{ session.date.strftime('%d/%m/%Y') }}
+                                {% endif %}
+                            </small>
+                            <a href="{{ url_for('sessions.view', id=session.id) }}" class="btn btn-sm btn-outline-primary">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-calendar-x display-1 text-muted mb-3"></i>
+                        <h4 class="text-muted">No Training Sessions Found</h4>
+                        <p class="text-muted mb-4">
+                            {% if request.args.get('date_from') or request.args.get('date_to') or request.args.get('status') %}
+                                No sessions match your current filters. Try adjusting your search criteria.
+                            {% else %}
+                                {{ client.name }} doesn't have any training sessions yet.
+                            {% endif %}
+                        </p>
+                        <a href="{{ url_for('sessions.add', client_id=client.id) }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i>Schedule First Session
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if sessions.pages and sessions.pages > 1 %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <nav aria-label="Sessions pagination">
+                <ul class="pagination justify-content-center">
+                    {% if sessions.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('sessions.index', client_id=client.id, page=sessions.prev_num, **request.args) }}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page_num in sessions.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != sessions.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('sessions.index', client_id=client.id, page=page_num, **request.args) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">…</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if sessions.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('sessions.index', client_id=client.id, page=sessions.next_num, **request.args) }}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Training Session</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the training session from <strong id="sessionDate"></strong>?</p>
+                <p class="text-danger small">This action cannot be undone and will remove all exercise data from this session.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">Delete Session</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function confirmDelete(sessionId, sessionDate) {
+    document.getElementById('sessionDate').textContent = sessionDate;
+    document.getElementById('deleteForm').action = '/sessions/' + sessionId + '/delete';
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+// Auto-submit filter form when status changes
+document.addEventListener('DOMContentLoaded', function() {
+    const statusSelect = document.querySelector('select[name="status"]');
+    if (statusSelect) {
+        statusSelect.addEventListener('change', function() {
+            this.form.submit();
+        });
+    }
+});
+</script>
+{% endblock %}
