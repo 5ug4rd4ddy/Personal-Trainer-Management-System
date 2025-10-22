@@ -139,7 +139,7 @@ class WorkoutPlan(db.Model):
     
     # Relationships
     details = db.relationship('WorkoutPlanDetail', backref='workout_plan', lazy=True, cascade='all, delete-orphan')
-    sessions = db.relationship('Session', backref='workout_plan_ref', lazy=True, cascade='all, delete-orphan', foreign_keys='Session.workout_plan_id')
+    sessions = db.relationship('Session', back_populates='workout_plan', lazy=True, cascade='all, delete-orphan', foreign_keys='Session.workout_plan_id')
     
     def __repr__(self):
         return f'<WorkoutPlan {self.plan_name}>'
@@ -193,7 +193,7 @@ class Session(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
-    workout_plan = db.relationship('WorkoutPlan', foreign_keys=[workout_plan_id])
+    workout_plan = db.relationship('WorkoutPlan', foreign_keys=[workout_plan_id], back_populates='sessions')
     details = db.relationship('SessionDetail', backref='session', lazy=True, cascade='all, delete-orphan')
     
     def __repr__(self):
