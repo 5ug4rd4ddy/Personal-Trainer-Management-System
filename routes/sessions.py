@@ -5,7 +5,7 @@ from forms import SessionForm
 from datetime import datetime, date
 from sqlalchemy import desc, asc
 import json
-from app import csrf
+from extensions import csrf
 
 sessions_bp = Blueprint('sessions', __name__)
 

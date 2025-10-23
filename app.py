@@ -1,14 +1,12 @@
 from flask import Flask
-from flask_login import LoginManager
-from flask_wtf.csrf import CSRFProtect
 from config import Config
+from extensions import login_manager, csrf
 
 # Import db from models to avoid circular imports
 from models import db
 
-# Initialize other extensions
-login_manager = LoginManager()
-csrf = CSRFProtect()
+# Initialize other extensions (shared instances imported from extensions.py)
+# login_manager and csrf are imported above to avoid circular imports
 
 def create_app():
     """
@@ -69,6 +67,8 @@ def create_app():
         
     return app
 
+# Export app for WSGI servers (Gunicorn)
+app = create_app()
+
 if __name__ == '__main__':
-    app = create_app()
     app.run(debug=True, host='0.0.0.0', port=8083)
